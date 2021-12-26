@@ -1,0 +1,118 @@
+CREATE DATABASE IF NOT EXISTS tdemo;
+USE tdemo;
+
+CREATE EXTERNAL TABLE IF NOT EXISTS `message`(
+  `action_type`       string, 
+  `site_common`       struct<site_name:string,
+                             currency:string,
+                             spm:string,
+                             language:string>, 
+  `super_properties`  struct<AppBuilderNumber:string,
+                             ApiVersion:string,
+                             OSVersion:string,
+                             AppVersion:string,
+                             GooglePlayServices:string,
+                             Model:string,
+                             Brand:string,
+                             DistinctID:string>, 
+  `event_common`      struct<spm:string,
+                             `timestamp`:bigint,
+                             experiments:array<struct<group_id:int,
+                                                      experiment_id:int>>>, 
+  `module`            struct<extra:map<string,string>,
+                             list_len:int,
+                             list_index:int,
+                             object_id:string>, 
+  `traffic_common`    struct<utm_content:string,
+                             utm_source:string,
+                             utm_keyword:string,
+                             utm_campaign:string,
+                             utm_medium:string>, 
+  `page`              struct<page_open_id:string,
+                             click_spm:string,
+                             extra:map<string,string>,
+                             app_open:string,
+                             app_webview_os:string,
+                             click_id:string,
+                             is_first_enter:boolean,
+                             object_id:string>, 
+  `logger`            struct<platform:string,
+                             request_id:string,
+                             uid:string,
+                             `timestamp`:bigint,
+                             app_ver:string,
+                             service_name:string,
+                             device_id:string,
+                             user_agent:string>, 
+  `event_type`        string, 
+  `item`              struct<extra:map<string,string>,
+                             object_id:string>, 
+  `session_id`        string, 
+  `duration`          int, 
+  `completion`        struct<module_attr:struct<ActivityGMV:double,
+                                                ZeroActivity:boolean,
+                                                ActivityName:string,
+                                                VerticalType:string,
+                                                ActivityCityID:int,
+                                                ActivityCountryID:int,
+                                                CategoryID:int>,
+                             user_attr:struct<RegisterMethod:string,
+                                              PartnerChannel:string,
+                                              BackendCountry:string>,
+                             page_attr:struct<ActivityGMV:double,
+                                              ZeroActivity:boolean,
+                                              PromoCodeUsed:double,
+                                              CreditsUsed:int,
+                                              Quantity:int,
+                                              PromoCodeType:string,
+                                              ActivityID:string,
+                                              GiftCardUsed:int,
+                                              tdemoFlexBuy:boolean,
+                                              VerticalType:string,
+                                              PromoCodeBatchID:int,
+                                              ActivityCityID:string,
+                                              tdemoFlexAvailable:boolean,
+                                              PaymentMethod:string,
+                                              ActivityCountryID:string,
+                                              PackageID:string,
+                                              CategoryID:string,
+                                              GMV:int>,
+                             traffic_retain:boolean,
+                             ip_country_code:string,
+                             login_status:boolean,
+                             ip_address:string>
+)
+PARTITIONED BY ( 
+  `event_date` string
+) STORED as PARQUET
+LOCATION 's3://aws-tdemo-deployment-test/processed_data/message/'
+;
+
+CREATE EXTERNAL TABLE IF NOT EXISTS `ctr_base` (
+  unique_id string,
+  event_type string,
+  action_type string,
+  ts BIGINT,
+  device_id string,
+  platform string,
+  ip_country_code string,
+  login_status BOOLEAN,
+  -- spm string,
+  page string,
+  page_obj_id string,
+  module string,
+  module_obj_id string,
+  module_list_index INT,
+  item string,
+  item_obj_id string,
+  exp_group_id INT,
+  exp_id INT
+) PARTITIONED BY (
+  event_date string
+) STORED as PARQUET
+LOCATION
+  's3://aws-tdemo-deployment-test/processed_data/ctr_base'
+TBLPROPERTIES (
+  'serialization.null.format'='',
+  'parquet.compression'='SNAPPY'
+);
